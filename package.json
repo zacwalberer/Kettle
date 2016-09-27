@@ -1,12 +1,12 @@
 {
-  "name": "test",
+  "name": "kettle",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Flexbox Starter",
+  "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Zac Walberer",
   "license": "ISC",
   "devDependencies": {
     "gulp": "^3.9.1"

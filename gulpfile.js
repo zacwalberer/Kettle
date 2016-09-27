@@ -1,58 +1,70 @@
 // Include Gulp
-var gulp = require('gulp');
+var gulp = require('gulp'),
 
 // Include Plugins
-    sass = require('gulp-sass'),
     autoprefixer = require('gulp-autoprefixer'),
-    sourcemaps = require('gulp-sourcemaps'),
     browserSync = require('browser-sync'),
-    useref = require('gulp-useref'),
-    uglify = require('gulp-uglify'),
-    gulpIf = require('gulp-if'),
-    cssnano = require('gulp-cssnano'),
-    imagemin = require('gulp-imagemin'),
     cache = require('gulp-cache'),
+    concat = require('gulp-concat'),
+    cssnano = require('gulp-cssnano'),
     del = require('del'),
-    runSequence = require('run-sequence');
+    gulpIf = require('gulp-if'),
+    imagemin = require('gulp-imagemin'),
+    jshint = require('gulp-jshint'),
+    rename = require('gulp-rename'),
+    runSequence = require('run-sequence'),
+    sass = require('gulp-sass'),
+    sourcemaps = require('gulp-sourcemaps'),
+    uglify = require('gulp-uglify'),
+    useref = require('gulp-useref');
 
-// Task Clean
-gulp.task('clean', function(){
-  return gulp.src(build).pipe(clean());
-});
-
-// Task Lint
-
-
-// Task Sass
-gulp.task('sass', function () {
-  return gulp.src('src/scss/base.scss')
+//  Styles
+gulp.task('styles', function () {
+  return sass('src/styles/base.scss')
     .pipe(sass({ outputStyle:'compressed' }).on('error', sass.logError))
-    // .pipe(uncss({html: ['index.html']}))
-    .pipe(autoprefixer({ browsers:['> 5% in US']}))
-    .pipe(cssnano())
+    .pipe(autoprefixer('last 2 version'))
+    .pipe(gulp.dest('build/styles'))
     .pipe(rename({ suffix: '.min' }))
-    .pipe(gulp.dest('build'));
+    .pipe(cssnano())
+    .pipe(gulp.dest('build/styles'));
 });
 
+// Scripts
+gulp.task('scripts', function() {
+  return gulp.src('src/scripts/**/*.js')
+    .pipe(jshint('.jshintrc'))
+    .pipe(jshint.reporter('default'))
+    .pipe(concat('main.js'))
+    .pipe(gulp.dest('build/scripts'))
+    .pipe(rename({ suffix: '.min' }))
+    .pipe(uglify())
+    .pipe(gulp.dest('build/scripts'));
+});
 
-// Optimizing CSS and JavaScript
-
-
-// Optimizing Images
-
-/*var gulp       = require('gulp');
-var imagemin   = require('gulp-imagemin');
-
-gulp.task('images', function(){
-    return gulp.src('./src/images/**')
-        .pipe(imagemin())
-        .pipe(gulp.dest('./build/images'));
-});*/
+// Images
+gulp.task('images', function() {
+  return gulp.src('src/images/**/*')
+    .pipe(cache(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
+    .pipe(gulp.dest('build/images'));
+});
 
 // Copying fonts
 
+// Clean
+gulp.task('clean', function() {
+  return del(['build/styles', 'build/scripts', 'build/images']);
+});
 
-// Cleaning
+// Default task
+gulp.task('default', ['clean'], function() {
+  gulp.start('styles', 'scripts', 'images');
+});
 
-
-// Build Sequences
+// Watch
+gulp.task('watch', function() {
+  gulp.watch('src/*.html').on('change', browserSync.reload);
+  gulp.watch('src/styles/**/*.scss', ['styles']).on('change', browserSync.reload);
+  gulp.watch('src/scripts/**/*.js', ['scripts']).on('change', browserSync.reload);
+  gulp.watch('src/images/**/*', ['images']).on('change', browserSync.reload);
+  gulp.watch(['build/**']).on('change', browserSync.reload);
+});
