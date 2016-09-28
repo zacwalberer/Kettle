@@ -15,12 +15,11 @@ var gulp = require('gulp'),
     runSequence = require('run-sequence'),
     sass = require('gulp-sass'),
     sourcemaps = require('gulp-sourcemaps'),
-    uglify = require('gulp-uglify'),
-    useref = require('gulp-useref');
+    uglify = require('gulp-uglify');
 
 // Static Server
 gulp.task('serve', function() {
-    browserSync.init({server:'build'});
+    browserSync.init({server:{baseDir:'build'}});
 });
 
 //  HTML
@@ -34,7 +33,7 @@ gulp.task('styles', function () {
   return gulp.src('src/styles/*.scss')
     .pipe(sass({ outputStyle:'compressed' }).on('error', sass.logError))
     .pipe(autoprefixer('last 2 version'))
-    .pipe(gulp.dest('build/styles'))
+    //.pipe(gulp.dest('build/styles'))
     .pipe(rename({ suffix: '.min' }))
     .pipe(cssnano())
     .pipe(gulp.dest('build/styles'));
@@ -60,15 +59,14 @@ gulp.task('images', function() {
 });
 
 // Copying fonts
+gulp.task('fonts', function() {
+  return gulp.src('src/fonts/**/*')
+    .pipe(gulp.dest('build/fonts'));
+});
 
 // Clean
 gulp.task('clean', function() {
-  return del(['build/styles', 'build/scripts', 'build/images']);
-});
-
-// Default task
-gulp.task('default', ['clean'], function() {
-  gulp.start('move', 'styles', 'scripts', 'images');
+  return del.sync('build/*.html', ['build/styles', 'build/scripts', 'build/images']);
 });
 
 // Watch
@@ -77,5 +75,11 @@ gulp.task('watch', function() {
   gulp.watch('src/styles/*.scss', ['styles']).on('change', browserSync.reload);
   gulp.watch('src/scripts/**/*.js', ['scripts']).on('change', browserSync.reload);
   gulp.watch('src/images/**/*', ['images']).on('change', browserSync.reload);
-  gulp.watch(['build/*']).on('change', browserSync.reload);
 });
+
+// Build sequence
+gulp.task('build', function(callback) {
+  runSequence('clean', ['move', 'styles', 'scripts', 'images', 'fonts', 'watch'], callback);
+});
+
+gulp.task('default', ['build', 'serve']);
