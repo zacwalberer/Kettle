@@ -72,7 +72,7 @@ gulp.task('clean', function() {
 // Watch
 gulp.task('watch', function() {
   gulp.watch('src/*.html', ['move']).on('change', browserSync.reload);
-  gulp.watch('src/styles/*.scss', ['styles']).on('change', browserSync.reload);
+  gulp.watch('src/styles/**/*.scss', ['styles']).on('change', browserSync.reload);
   gulp.watch('src/scripts/**/*.js', ['scripts']).on('change', browserSync.reload);
   gulp.watch('src/images/**/*', ['images']).on('change', browserSync.reload);
 });
